@@ -5,8 +5,8 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
-import { scopeChainOf, scopeOf } from './index.ts'
-import type { ScopeKey } from './index.ts'
+import { scopeChainOf, scopeOf } from './chain.ts'
+import type { ScopeKey } from './chain.ts'
 
 /** One scope's aggregate contribution to a registry. */
 export interface ScopeLayer {

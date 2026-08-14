@@ -7,15 +7,13 @@
 
 import type { Context, Fiber } from '@deepseek-ai/cordis'
 import { Context as CordisContext } from '@deepseek-ai/cordis'
+import {
+  anyScopeAncestor, scopeOf, scopeParentOf, setScopeParent, tagScopeContext, type ScopeKey,
+} from './chain.ts'
 
+export { scopeChainOf, scopeOf, scopeParentOf, type ScopeKey } from './chain.ts'
 export { AnonymousEntries, NamedEntries, ScopedLayers } from './store.ts'
 export type { ScopeLayer } from './store.ts'
-
-/** An opaque, identity-compared scope key. */
-export type ScopeKey = object
-
-/** Context tag written by {@link createScope}. */
-const kScope = Symbol('dsh.scope')
 
 declare const ScopedBrand: unique symbol
 
@@ -29,15 +27,6 @@ export type Scoped<T extends object> = object & { readonly [ScopedBrand]: T }
 /** The key associated with each carrier. Presence distinguishes an unkeyed carrier from a non-carrier. */
 const carrierKeys = new WeakMap<object, ScopeKey | undefined>()
 
-/**
- * The enclosing scope of each key. One relation powers both directions of
- * scope nesting: registration views inherit DOWN the chain (a child scope
- * sees its ancestors' layers — {@link ScopedLayers}), and event admission
- * extends UP it (a listener tagged with an ancestor receives events dispatched
- * to a descendant key — {@link scopeTarget}).
- */
-const scopeParents = new WeakMap<ScopeKey, ScopeKey>()
-
 /** The privileged handle to move one scope key's parent link. */
 export interface ScopeParentBinding {
   /**
@@ -48,14 +37,6 @@ export interface ScopeParentBinding {
    * @param parent - the new enclosing scope key.
    */
   rebind(parent: ScopeKey): void
-}
-
-/** Cycle-checked write shared by the bind and every rebind. */
-function linkScopeParent(key: ScopeKey, parent: ScopeKey): void {
-  for (let cursor: ScopeKey | undefined = parent; cursor !== undefined; cursor = scopeParents.get(cursor)) {
-    if (cursor === key) throw new Error('dsh-scope: scope parent link would form a cycle')
-  }
-  scopeParents.set(key, parent)
 }
 
 /**
@@ -70,35 +51,15 @@ function linkScopeParent(key: ScopeKey, parent: ScopeKey): void {
  * @returns the binding that alone may re-link this key.
  */
 export function bindScopeParent(key: ScopeKey, parent: ScopeKey): ScopeParentBinding {
-  if (scopeParents.has(key)) {
+  if (scopeParentOf(key) !== undefined) {
     throw new Error('dsh-scope: scope key is already bound to a parent; re-linking requires the binding returned by the original bind')
   }
-  linkScopeParent(key, parent)
+  setScopeParent(key, parent)
   return {
     rebind(next: ScopeKey): void {
-      linkScopeParent(key, next)
+      setScopeParent(key, next)
     },
   }
-}
-
-/**
- * Read one key's enclosing scope.
- * @param key - the scope key to inspect.
- * @returns its parent key, or `undefined` for a root scope.
- */
-export function scopeParentOf(key: ScopeKey): ScopeKey | undefined {
-  return scopeParents.get(key)
-}
-
-/**
- * The chain from a key to its root ancestor.
- * @param key - the starting key, or `undefined` for the empty chain.
- * @returns keys nearest-first: `[key, parent, grandparent, …]`.
- */
-export function scopeChainOf(key: ScopeKey | undefined): ScopeKey[] {
-  const chain: ScopeKey[] = []
-  for (let cursor = key; cursor !== undefined; cursor = scopeParents.get(cursor)) chain.push(cursor)
-  return chain
 }
 
 /** A minted registration scope and its quiescent disposal boundaries. */
@@ -135,24 +96,15 @@ export interface CreateScopeOptions {
  * @returns the scoped context and exact/shared disposal boundaries.
  */
 export function createScope(ctx: Context, key: ScopeKey, options?: CreateScopeOptions): Scope {
-  if (options?.parent !== undefined) bindScopeParent(key, options.parent)
+  if (options?.parent !== undefined) setScopeParent(key, options.parent)
   const fiber = ctx.plugin(scope)
-  const scoped: Context = fiber.ctx.extend({ [kScope]: key })
+  const scoped: Context = tagScopeContext(fiber.ctx, key)
   let disposing: Promise<void> | undefined
   return {
     ctx: scoped,
     rawDispose: fiber.dispose,
     dispose: () => (disposing ??= quiesceFiber(fiber)),
   }
-}
-
-/**
- * Read the nearest scope tag inherited by a context.
- * @param ctx - context to inspect.
- * @returns its scope key, or `undefined` for an unscoped context.
- */
-export function scopeOf(ctx: Context): ScopeKey | undefined {
-  return (ctx as Context & { [kScope]?: ScopeKey })[kScope]
 }
 
 /**
@@ -174,10 +126,7 @@ export function scopeTarget<T extends object>(base: T, key: ScopeKey | undefined
       if (baseFilter !== undefined && !baseFilter.call(base, ctx)) return false
       const tag = scopeOf(ctx)
       if (tag === undefined) return true
-      for (let cursor = key; cursor !== undefined; cursor = scopeParents.get(cursor)) {
-        if (cursor === tag) return true
-      }
-      return false
+      return anyScopeAncestor(key, cursor => cursor === tag)
     },
   }
   carrierKeys.set(carrier, key)
