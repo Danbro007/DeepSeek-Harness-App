@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { harnessArguments, parseHarnessReadyUrl, resolveDesktopCwd } from '../src/harness-process.ts'
+import { harnessArguments, parseHarnessReadyUrl, resolveCommandPrefix, resolveDesktopCwd } from '../src/harness-process.ts'
 
 describe('desktop Harness process helpers', () => {
   it('accepts only the canonical loopback readiness line', () => {
@@ -18,5 +18,12 @@ describe('desktop Harness process helpers', () => {
     expect(harnessArguments(['cli.js'], ['/app/desktop.cordis.yml'])).toEqual([
       'cli.js', 'web', '--patch', '/app/desktop.cordis.yml', '--port', '0',
     ])
+  })
+
+  it('adds --expose-internals only when running as Electron Node', () => {
+    expect(resolveCommandPrefix({ runAsNode: true, cliEntry: 'cli.js' })).toEqual(['--expose-internals', 'cli.js'])
+    expect(resolveCommandPrefix({ runAsNode: false, cliEntry: 'cli.js' })).toEqual(['cli.js'])
+    expect(resolveCommandPrefix({ commandPrefix: ['explicit'], runAsNode: true, cliEntry: 'cli.js' }))
+      .toEqual(['explicit'])
   })
 })

@@ -23,7 +23,14 @@ export interface HarnessProcessOptions {
   commandPrefix?: string[]
   /** Launcher patch overlays applied before Web application arguments. */
   patchFiles?: string[]
-  /** Run the executable as Electron's bundled Node runtime. */
+  /**
+   * Run the executable as Electron's bundled Node runtime (`ELECTRON_RUN_AS_NODE`).
+   * When true, the CLI is launched with `--expose-internals`: the Cordis loader
+   * must reach Node's internal ESM loader (`internal/modules/esm/loader`), and
+   * its native-addon fallback (`node-addon-require-builtin`) is ABI-incompatible
+   * with Electron's Node runtime. This is a pinned contract — an Electron or
+   * Node upgrade that reshapes the internal loader breaks packaged startup.
+   */
   runAsNode?: boolean
   /** Additional environment values merged over the current process. */
   env?: NodeJS.ProcessEnv
@@ -60,6 +67,21 @@ export function resolveDshCliEntry(): string {
   return join(dirname(require.resolve('@deepseek-ai/dsh/package.json')), 'lib', 'bin.js')
 }
 
+/**
+ * Resolve the arguments that precede the `web` profile invocation. An explicit
+ * `commandPrefix` wins; otherwise the CLI entry is derived, preceded by
+ * `--expose-internals` when the process runs inside Electron's Node runtime
+ * (see {@link HarnessProcessOptions.runAsNode}).
+ */
+export function resolveCommandPrefix(
+  options: Pick<HarnessProcessOptions, 'commandPrefix' | 'runAsNode' | 'cliEntry'>,
+): string[] {
+  return options.commandPrefix ?? [
+    ...(options.runAsNode === true ? ['--expose-internals'] : []),
+    options.cliEntry ?? resolveDshCliEntry(),
+  ]
+}
+
 /** Owns one child process from boot readiness through bounded shutdown. */
 export class HarnessProcess {
   private child: ChildProcessByStdio<null, Readable, Readable> | undefined
@@ -70,10 +92,7 @@ export class HarnessProcess {
   /** Start the Web profile on an OS-assigned loopback port. */
   async start(): Promise<string> {
     if (this.child !== undefined) throw new Error('desktop: Harness process already started')
-    const commandPrefix = this.options.commandPrefix ?? [
-      ...(this.options.runAsNode === true ? ['--expose-internals'] : []),
-      this.options.cliEntry ?? resolveDshCliEntry(),
-    ]
+    const commandPrefix = resolveCommandPrefix(this.options)
     const child = spawn(
       this.options.executable,
       harnessArguments(commandPrefix, this.options.patchFiles),

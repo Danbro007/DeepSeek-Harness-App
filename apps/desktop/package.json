@@ -50,6 +50,7 @@
     "@types/node": "^22.20.0",
     "electron": "^43.4.0",
     "@electron/packager": "^20.3.0",
+    "playwright": "^1.49.0",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"

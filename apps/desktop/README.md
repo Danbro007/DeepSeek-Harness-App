@@ -58,6 +58,7 @@ This distribution intentionally reuses the browser carrier. It is not the port-f
 ## Known limitations
 
 - The build is macOS-only and is not code-signed or notarized by the local packaging command.
+- The packaged application launches the CLI through Electron's bundled Node runtime (`ELECTRON_RUN_AS_NODE`) with `--expose-internals`: the Cordis loader needs Node's internal ESM loader, and its native-addon fallback is ABI-incompatible with Electron. This is a pinned contract — an Electron or Node upgrade that reshapes the internal loader breaks packaged startup.
 - A loopback HTTP server exists for the lifetime of the application, although the OS assigns a fresh port and the Web profile accepts only loopback by default.
 - Closing the last window follows normal macOS behavior and keeps the application running until the user quits it.
 

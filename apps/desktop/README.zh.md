@@ -58,6 +58,7 @@ pnpm run pack:desktop:mac
 ## 已知限制
 
 - 当前构建仅支持 macOS，本地打包命令不会对应用进行代码签名或公证。
+- 打包后的应用通过 Electron 内置的 Node 运行时（`ELECTRON_RUN_AS_NODE`）并以 `--expose-internals` 启动 CLI：Cordis loader 需要访问 Node 的内部 ESM loader，而其原生插件回退方案与 Electron 的 ABI 不兼容。这是一个固定契约——任何改变内部 loader 结构的 Electron 或 Node 升级都会破坏打包版启动。
 - 应用存活期间会运行一个回环 HTTP 服务器，但端口由 OS 临时分配，且 Web profile 默认只接受回环访问。
 - 关闭最后一个窗口遵循常规 macOS 行为；应用会继续运行，直到用户主动退出。
 
