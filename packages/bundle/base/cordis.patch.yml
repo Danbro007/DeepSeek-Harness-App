@@ -13,6 +13,22 @@
 # driven); the grouping is for readers.
 
 - insert:
+    # Runtime invariant registry and the core companions that assert the owned
+    # relationships every profile relies on: session-log ordering, agent
+    # lifecycle, and model-visible log reconstruction. Enabled by default; set
+    # `enabled: false` or package filters on the `invariants` row to opt out.
+    - id: invariants
+      name: '@deepseek-ai/dsh-invariants'
+
+    - id: session-invariant
+      name: '@deepseek-ai/dsh-session/invariant'
+
+    - id: agent-invariant
+      name: '@deepseek-ai/dsh-agent/invariant'
+
+    - id: agent-loop-invariant
+      name: '@deepseek-ai/dsh-agent-loop/invariant'
+
     - id: timer
       name: '@deepseek-ai/cordis-plugin-timer'
 
