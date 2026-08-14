@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [main, master]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -644,6 +644,36 @@ jobs:
           DSH_SNAPSHOT_MAX_CONCURRENCY: '1'
         run: pnpm run check:ci
 
+  # Pack and Electron-smoke the macOS desktop distribution. The desktop app
+  # reuses the Web profile and is macOS-only by design, so this lane owns the
+  # only macOS coverage for the packaged artifact: it boots the real Electron
+  # shell, waits for the Web profile's loopback readiness, asserts the
+  # same-origin navigation policy, and proves the pack command still produces an
+  # intact .app. Blocking, so the shipped desktop artifact cannot regress
+  # silently.
+  desktop-macos:
+    name: desktop / macos (Electron smoke + pack)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.PRIMARY_NODE_VERSION }}
+
+      - name: Install (immutable)
+        run: pnpm install --frozen-lockfile
+
+      - name: Desktop Electron integration smoke
+        run: pnpm run test:desktop
+
+      - name: Pack macOS application
+        run: pnpm run pack:desktop:mac
+
   # Hot-standby drill for the in-house self-hosted Windows pool: every master
   # move re-runs the complete unsharded Windows gate inventory on the persistent
   # VM, continuously proving that environment can take over the required
@@ -925,7 +955,7 @@ jobs:
           && github.event.pull_request.user.login != 'dependabot[bot]'
           && fromJSON('["self-hosted", "linux", "x64", "vm-backup"]')
           || 'ubuntu-latest' }}
-    needs: [node-24, node-24-coverage, node-24-consumers, node-compat, python-sdk, python-runtime, windows]
+    needs: [node-24, node-24-coverage, node-24-consumers, node-compat, python-sdk, python-runtime, windows, desktop-macos]
     if: always() && github.event_name == 'pull_request'
     steps:
       - name: Fail if any needed job did not succeed
