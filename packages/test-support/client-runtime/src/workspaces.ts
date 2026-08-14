@@ -16,6 +16,8 @@ import type { Stabilizer } from './fixtures.ts'
 export class TestWorkspaces implements IWorkspaces {
   /** The useWorkspaces standard feed. */
   readonly list: SnapshotStore<WorkspaceListState>
+  /** Monotonic requests that open the no-Workspace selector. */
+  readonly newSessionRequests = createSnapshotStore(0)
 
   /** Calls observed on the action face, newest last. */
   readonly calls: { method: string; args: unknown[] }[] = []
@@ -210,6 +212,22 @@ export class TestWorkspaces implements IWorkspaces {
     }
     await this.update((draft) => {
       draft.archivedSessionIds = [...draft.archivedSessionIds, sessionId]
+    })
+  }
+
+  /**
+   * Restore a session (recorded) and remove it from the archive-set projection.
+   * @param sessionId - session to restore.
+   */
+  async unarchiveSession(sessionId: SessionId): Promise<void> {
+    this.calls.push({ method: 'unarchiveSession', args: [sessionId] })
+    const stub = this.stubs.get('unarchiveSession')
+    if (stub !== undefined) {
+      await stub(sessionId)
+      return
+    }
+    await this.update((draft) => {
+      draft.archivedSessionIds = draft.archivedSessionIds.filter(id => id !== sessionId)
     })
   }
 }

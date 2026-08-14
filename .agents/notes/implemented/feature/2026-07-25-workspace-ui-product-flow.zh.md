@@ -22,6 +22,8 @@ Host 在 Workspace entity 上提供以下 GUI 接线：
 | `workspace.create({ path })` | 按 canonical path 收编已有目录；由 basename 派生的显示名可以重复 |
 | `workspace.insertBefore({ workspaceId, beforeWorkspaceId? })` | 在持久注册表顺序内移动一个 Workspace，并返回完整的已提交顺序 |
 | `workspace.delete({ workspaceId })` | 移除 Workspace 注册记录，同时保留目录和会话日志；相关 Session 进入 Ungrouped |
+| `workspace.archiveSession({ sessionId })` | 将实时或已持久化的 Session 加入持久全局归档集合，而不改变其日志或 Workspace 记账 |
+| `workspace.unarchiveSession({ sessionId })` | 幂等地从该集合移除 Session，使保留的记账将其重新投影到原位置 |
 | `session.create({ workspaceId, sessionId? })` | 从 Workspace 解析 cwd，以可选预分配 id 幂等创建 Session 并 attach |
 | `session.create({ cwd })` | 保留给非 Workspace 调用方，创建 Ungrouped Session |
 
@@ -50,7 +52,7 @@ Session 自己持有首条输入并驱动一条内部流水线：必要时以预
 
 完全没有 Workspace 时，页面创建默认名为 `workspace` 的前端 Workspace 对象和指向它的前端 Session。两者不写 Host，composer 始终可输入；首次发送才依次 materialize Workspace、attach Session、发送消息。
 
-顶部 New Session、Workspace 行内加号和 Workspace picker 最终都调用同一 New Session 动作：显式 Workspace id 直接成为目标，未指定时先使用当前 Session 所属 Workspace，再使用最近 Workspace；没有真实 Workspace 时进入空白 New Session 页面。Workspace picker 的单一 Add workspace 动作（见[单一路径 Note](../simplification/2026-07-31-one-route-to-add-a-workspace.md)；本决策做出时是 Use an existing folder 与按名称创建两个动作）会在用户确认目录时立即创建真实 Workspace，再将前端 Session 的目标改为该 Workspace；即使用户不发送消息，显式创建的空 Workspace 也保留。
+顶部 New Session、Workspace 行内加号和 Workspace picker 最终都调用同一 New Session 动作：显式 Workspace id 直接成为目标，未指定时先使用当前 Session 所属 Workspace，再使用最近 Workspace。没有真实 Workspace 时，该动作进入空白 New Session 页面，并发出一次瞬时请求以打开其中的 Workspace picker，避免重复点击在视觉上毫无反应。Workspace picker 的单一 Add workspace 动作（见[单一路径 Note](../simplification/2026-07-31-one-route-to-add-a-workspace.md)；本决策做出时是 Use an existing folder 与按名称创建两个动作）会在用户确认目录时立即创建真实 Workspace，再将前端 Session 的目标改为该 Workspace；即使用户不发送消息，显式创建的空 Workspace 也保留。
 
 新建 Workspace 的显示名取自其所在目录。不同 canonical path 可以拥有相同的 basename 派生显示名（见[身份决策](../bug-fix/2026-07-31-same-basename-workspace-adoption.md)）；显式的重命名操作仍保留显示名重名检查。跨 Workspace 移动 Session、从 Ungrouped 手动收编以及分别输入显示名和目录名仍不在此动线范围内。
 
@@ -108,6 +110,7 @@ Sidebar 与 conversation empty hero 通过 slot 获得标准化动作：`startSe
 - Workspace list 只读取 header 完成一次可重入 bootstrap；已初始化的空注册表重启不重复初始化，成员读取同时校验索引与 canonical cwd。
 - 初始默认目标只在两份基线 ready 后确定一次；Workspace 组不因 hydration 或 Session 活跃重排，显式 Workspace 拖拽顺序在重连后仍然保持。
 - 当前空白 Session 可显示为唯一的 New Session 行，同时不暴露其他可复用空白会话，也不显示 Session 数量。
+- 没有 Workspace 时重复触发顶部 New Session 会打开 Workspace 选择；runtime 与常驻外壳测试固定该请求传递。
 - UI 与 Host 会将 canonical path 不同但 basename 相同的目录接纳为独立 Workspace，而显式的重命名操作会拒绝重复显示名；cwd-only Session、无效历史 cwd 和未 attach Session 保持 Ungrouped。
 - 经确认的 Workspace 删除只移除注册记录，保留当前 Session、目录、文件和会话日志，并在刷新后保持该状态；包级测试固定一元响应／帧／基线竞态和失败回滚行为。
 - keyless runnable 快照覆盖零态、显式创建和首次发送；包级测试覆盖 bootstrap、成员校验、排序、幂等、失败恢复及任意 frame 顺序。

@@ -34,6 +34,16 @@ pnpm run build
 pnpm dsh web
 ```
 
+### macOS 桌面应用
+
+从源码构建未打包的桌面应用：
+
+```sh
+pnpm run pack:desktop:mac
+```
+
+生成的 `.app` 位于 `apps/desktop/dist/DeepSeek Harness App-darwin-arm64/` 下。参见[桌面应用参考](apps/desktop/README.md)。
+
 ## 社区与支持
 
 - 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。

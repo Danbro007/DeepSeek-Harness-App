@@ -911,6 +911,23 @@ describe('registry-global session archive', () => {
     expect(storedState(result.pool).archivedSessionIds).toEqual(['stray', 'live-only'])
   })
 
+  it('unarchives durably and idempotently without changing Workspace accounting', async () => {
+    const dir = await makeDir('unarchive-home')
+    const result = await harness({ sessions: [header('kept', dir, 100), header('gone', dir, 200)] })
+    const workspace = result.registry.list()[0]!
+    await result.registry.archiveSession(SessionId('kept'))
+    await result.registry.archiveSession(SessionId('gone'))
+
+    await result.registry.unarchiveSession(SessionId('kept'))
+    expect(result.registry.archivedSessionIds).toEqual(['gone'])
+    expect(storedState(result.pool).archivedSessionIds).toEqual(['gone'])
+    expect(new Set(workspace.sessionIds)).toEqual(new Set(['kept', 'gone']))
+    const changesAfterFirst = result.changes.filter(change => change.table === '').length
+
+    await result.registry.unarchiveSession(SessionId('kept'))
+    expect(result.changes.filter(change => change.table === '').length).toBe(changesAfterFirst)
+  })
+
   it('propagates a persistence-listing failure instead of reporting an unknown session', async () => {
     const result = await harness({ sessions: [] })
     result.list.mockRejectedValueOnce(new Error('persistence backend down'))

@@ -473,3 +473,27 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
     />
   )
 }
+
+/** One archived session row with a single restore action. */
+export function ArchivedSessionItem({ node, now, onRestore, t }: {
+  node: SessionNode
+  now: number
+  onRestore: (id: SessionNode['id']) => void
+  t: RowTranslate
+}) {
+  return (
+    <div className={clsx(css.sessionRow, css.archivedSessionRow)} role="treeitem">
+      <span className={css.title}>{displayTitle(node, t)}</span>
+      <span className={css.time}>{timeLabel(node.updatedAt, now, t)}</span>
+      <span className={css.rowActions}>
+        <button
+          type="button"
+          className={css.restoreButton}
+          onClick={() => { onRestore(node.id) }}
+        >
+          {t('menu.restoreSession')}
+        </button>
+      </span>
+    </div>
+  )
+}

@@ -34,6 +34,16 @@ pnpm run build
 pnpm dsh web
 ```
 
+### macOS desktop application
+
+Build an unpacked desktop application from source:
+
+```sh
+pnpm run pack:desktop:mac
+```
+
+The `.app` is written under `apps/desktop/dist/DeepSeek Harness App-darwin-arm64/`. See the [desktop application reference](apps/desktop/README.md).
+
 ## Community and support
 
 - Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).

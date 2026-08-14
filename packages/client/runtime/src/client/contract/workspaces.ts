@@ -14,6 +14,8 @@ import type { ObservableSnapshot } from './store.ts'
 export interface IWorkspaces {
   /** The useWorkspaces standard feed (read face — writes stay inside the domain). */
   readonly list: ObservableSnapshot<WorkspaceListState>
+  /** Requests to open Workspace selection when New Session has no target. */
+  readonly newSessionRequests: ObservableSnapshot<number>
   /**
    * Connect a Workspace to its reusable or freshly created blank session.
    * @param workspaceId - target workspace.
@@ -91,4 +93,10 @@ export interface IWorkspaces {
    * @param sessionId - session to archive.
    */
   archiveSession(sessionId: SessionId): Promise<void>
+  /**
+   * Restore a session from the registry-global archive set. Its existing log
+   * and Workspace accounting position become visible again.
+   * @param sessionId - session to restore.
+   */
+  unarchiveSession(sessionId: SessionId): Promise<void>
 }

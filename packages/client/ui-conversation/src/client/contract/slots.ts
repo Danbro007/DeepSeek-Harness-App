@@ -421,7 +421,11 @@ export interface ConversationInjected {
    * plugin raised one; the reason is the blocker's own localized copy, which
    * the root renders as the inert composer's placeholder.
    */
-  hooks: { composerBlock: ObservableSnapshot<ComposerBlock | undefined> }
+  hooks: {
+    composerBlock: ObservableSnapshot<ComposerBlock | undefined>
+    /** Monotonic New Session request that opens Workspace selection when no target exists. */
+    newSessionRequest: ObservableSnapshot<number>
+  }
 }
 
 /** Business callbacks injected into the strict Session body seat. */

@@ -51,6 +51,8 @@ export class DirectoryBrowseError extends Error {
 export class WorkspaceRuntime implements IWorkspaces {
   /** UI-facing immutable projection; the manager remains wire truth. */
   readonly list: SnapshotStore<WorkspaceListState>
+  /** Monotonic requests that move an empty New Session view into Workspace selection. */
+  readonly newSessionRequests = createSnapshotStore(0)
   /** Workspace baseline and frame owner. */
   private readonly manager: WorkspaceManager
   /** In-flight blank-session creates keyed by workspace (connectWorkspace coalescing). */
@@ -183,6 +185,7 @@ export class WorkspaceRuntime implements IWorkspaces {
     const target = workspaceId ?? currentWorkspaceId ?? workspace.recentWorkspaceId
     if (target === undefined) {
       this.sessions.clear()
+      this.newSessionRequests.set(this.newSessionRequests.getSnapshot() + 1)
       return
     }
     void this.connectWorkspace(target).then(
@@ -290,6 +293,15 @@ export class WorkspaceRuntime implements IWorkspaces {
   async archiveSession(sessionId: SessionId): Promise<void> {
     const result = await this.manager.archiveSession(sessionId)
     if (!result.ok) throw new Error(`session archive failed: ${result.error.code}: ${result.error.message}`)
+  }
+
+  /**
+   * Restore one session from the registry-global archive set.
+   * @param sessionId - session to restore.
+   */
+  async unarchiveSession(sessionId: SessionId): Promise<void> {
+    const result = await this.manager.unarchiveSession(sessionId)
+    if (!result.ok) throw new Error(`session unarchive failed: ${result.error.code}: ${result.error.message}`)
   }
 
   /**

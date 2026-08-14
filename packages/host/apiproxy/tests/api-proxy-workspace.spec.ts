@@ -545,6 +545,19 @@ describe('Host Workspace increments', () => {
       payload: { type: 'host/archived-sessions-changed', archivedSessionIds: [sessionId] },
     })
 
+    const restored = nextHostFrame(stream)
+    expect(expectOk(await api.workspace.unarchiveSession(request({ sessionId }))).archivedSessionIds)
+      .toEqual([])
+    expect(await restored).toMatchObject({
+      payload: { type: 'host/archived-sessions-changed', archivedSessionIds: [] },
+    })
+    const rearchived = nextHostFrame(stream)
+    expect(expectOk(await api.workspace.archiveSession(request({ sessionId }))).archivedSessionIds)
+      .toEqual([sessionId])
+    expect(await rearchived).toMatchObject({
+      payload: { type: 'host/archived-sessions-changed', archivedSessionIds: [sessionId] },
+    })
+
     // Accounting and the session itself are untouched; list re-baselines the set.
     const listed = expectOk(await api.workspace.list(request({})))
     expect(listed.archivedSessionIds).toEqual([sessionId])

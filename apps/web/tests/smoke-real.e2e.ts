@@ -509,6 +509,9 @@ describe.skipIf(!process.env.DEEPSEEK_API_KEY || notReady.length > 0)('web smoke
     page = await newEnglishPage(browser)
     page.on('pageerror', e => pageErrors.push(String(e)))
     await page.goto(baseUrl, { waitUntil: 'load' })
+    const welcome = page.getByRole('dialog', { name: 'Internal Testing Notice' })
+    await welcome.waitFor({ timeout: 10_000 })
+    await welcome.getByRole('button', { name: 'Continue' }).click()
   }, 120_000)
 
   afterAll(async () => {

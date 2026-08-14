@@ -1,0 +1,6 @@
+# The desktop distribution enables lazy in-memory conversation search while
+# the shared Web profile keeps it opt-in for server deployments.
+- id: session-query-sqlite
+  config:
+    path: ':memory:'
+    openAt: first-search
