@@ -24,7 +24,7 @@ DeepSeek Harness 已在 Web profile 中提供完整 GUI，但还没有可安装�
 
 ## 验证
 
-单元测试固定就绪行解析、桌面 patch 参数、cwd 选择、同源导航和外链协议过滤。macOS 打包检查必须生成可启动且 `CFBundleIconFile` 能解析到所生成 `.icns` 的 `.app`；冒烟测试使用空的临时 `DSH_HOME` 启动打包后的可执行文件，等待其回环地址就绪行，并获取 Web shell 标题。
+单元测试固定就绪行解析、桌面 patch 参数、cwd 选择、同源导航和外链协议过滤。macOS 打包检查必须生成可启动且 `CFBundleIconFile` 能解析到所生成 `.icns` 的 `.app`；冒烟测试使用空的临时 `DSH_HOME` 启动打包后的可执行文件，等待其回环地址就绪行，并获取 Web shell 标题。集成测试通道——真实进程的 harness 生命周期冒烟测试与被跳过的 Playwright Electron shell 测试——由[桌面 Electron 集成测试](../testing/2026-08-14-desktop-electron-integration-testing.md) Agent Note 负责。
 
 ## 已考虑的替代方案
 

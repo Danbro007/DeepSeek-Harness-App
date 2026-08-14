@@ -24,7 +24,7 @@ This wrapper does not implement the reserved port-free IPC carrier. That remains
 
 ## Verification
 
-Unit tests pin readiness-line parsing, desktop-patch arguments, cwd selection, same-origin navigation, and external-link scheme filtering. The macOS packaging check must produce a launchable `.app` whose `CFBundleIconFile` resolves to the generated `.icns`; a smoke with an empty temporary `DSH_HOME` starts the packaged executable, waits for its loopback readiness line, and fetches the Web shell title.
+Unit tests pin readiness-line parsing, desktop-patch arguments, cwd selection, same-origin navigation, and external-link scheme filtering. The macOS packaging check must produce a launchable `.app` whose `CFBundleIconFile` resolves to the generated `.icns`; a smoke with an empty temporary `DSH_HOME` starts the packaged executable, waits for its loopback readiness line, and fetches the Web shell title. The integrated test lane — the real-process harness lifecycle smoke and the skipped Playwright Electron shell test — is owned by the [desktop Electron integration testing](../testing/2026-08-14-desktop-electron-integration-testing.md) Agent Note.
 
 ## Alternatives considered
 
