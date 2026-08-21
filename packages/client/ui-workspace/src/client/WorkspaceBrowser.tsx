@@ -20,8 +20,8 @@ import type {
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { WorkspaceBrowserProps } from './contract/slots.ts'
 import type { SessionNode, SessionOrderBy } from './tree.ts'
-import { deriveArchived, deriveFlat, deriveGroups, deriveSearchResults, UNGROUPED_KEY } from './tree.ts'
-import { ArchivedSessionItem, ProjectRowItem, SearchResultItem, SessionNodeItem } from './rows/Rows.tsx'
+import { deriveFlat, deriveGroups, deriveSearchResults, UNGROUPED_KEY } from './tree.ts'
+import { ProjectRowItem, SearchResultItem, SessionNodeItem } from './rows/Rows.tsx'
 import { FLAT_SESSION_ORDER_KEY } from './stores.ts'
 import { WorkspacePickFlow } from './WorkspacePicker.tsx'
 import css from './WorkspaceBrowser.module.css'
@@ -144,13 +144,11 @@ function nextSessionOrderAccount({
 }
 
 /** Grouping and ordering menu; own open state so it resets with the wide chrome. */
-function ViewOptionsMenu({ groupBy, orderBy, archived, onGroupPick, onOrderPick, onArchivedPick, t }: {
+function ViewOptionsMenu({ groupBy, orderBy, onGroupPick, onOrderPick, t }: {
   groupBy: 'workspace' | 'flat'
   orderBy: SessionOrderBy
-  archived: boolean
   onGroupPick: (mode: 'workspace' | 'flat') => void
   onOrderPick: (mode: SessionOrderBy) => void
-  onArchivedPick: () => void
   t: WorkspaceBrowserProps['t']
 }) {
   const [open, setOpen] = useState(false)
@@ -162,16 +160,14 @@ function ViewOptionsMenu({ groupBy, orderBy, archived, onGroupPick, onOrderPick,
         { type: 'label' as const, id: 'group-by', text: t('groupBy.label') },
         { id: 'workspace', label: t('groupBy.workspace') },
         { id: 'flat', label: t('groupBy.flat') },
-        { id: 'archived', label: t('groupBy.archived') },
         { type: 'separator' as const, id: 'order-by-separator' },
         { type: 'label' as const, id: 'order-by', text: t('orderBy.label') },
         { id: 'manual', label: t('orderBy.manual') },
         { id: 'updated', label: t('orderBy.updated') },
       ]}
-      selectedIds={[archived ? 'archived' : groupBy, orderBy]}
+      selectedIds={[groupBy, orderBy]}
       onSelect={(id) => {
         if (id === 'workspace' || id === 'flat') onGroupPick(id)
-        else if (id === 'archived') onArchivedPick()
         else if (id === 'manual' || id === 'updated') onOrderPick(id)
         setOpen(false)
       }}
@@ -222,6 +218,8 @@ type SessionTreeProps = Pick<
   'useSessions' | 'startSession' | 'open' | 'forkSession'
   | 'insertWorkspaceBefore' | 'insertSessionBefore' | 't'
 > & {
+  /** Host account home for POSIX hover-path abbreviation. */
+  home?: string | undefined
   workspaces: readonly WorkspaceView[]
   /** Explicit persisted zero-or-five-session state by Workspace group. */
   groupExpansion: Readonly<Record<string, boolean>>
@@ -255,7 +253,7 @@ function SessionTree({
   onRenameRequest, onDeleteRequest, onSessionRename, onSessionArchive,
   insertWorkspaceBefore, insertSessionBefore, orderBy,
   groupExpansion, setGroupExpanded,
-  sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t,
+  sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, home, t,
 }: SessionTreeProps) {
   const list = useSessions(s => s)
   const current = list.current
@@ -454,6 +452,7 @@ function SessionTree({
             >
               <ProjectRowItem
                 group={group}
+                home={home}
                 t={t}
                 onToggle={() => {
                   if (group.expanded) {
@@ -666,30 +665,6 @@ function FlatList({
   )
 }
 
-/** Archived-session body: Host archive order with one idempotent restore action. */
-function ArchivedList({ useSessions, archivedSessionIds, onRestore, t }: Pick<
-  SessionTreeProps,
-  'useSessions' | 'archivedSessionIds' | 't'
-> & { onRestore: (sessionId: SessionId) => void }) {
-  const list = useSessions(s => s)
-  const rows = useMemo(
-    () => deriveArchived(list, archivedSessionIds),
-    [list, archivedSessionIds],
-  )
-  const now = Date.now()
-  return (
-    <div className={clsx(css.treeBody, css.wide)}>
-      <div className={clsx(css.list, css.flatList)} role="tree" aria-label={t('section.archived')}>
-        {rows.length === 0 && <div className={css.empty}>{t('empty.archived')}</div>}
-        {rows.map(node => (
-          <ArchivedSessionItem key={node.id} node={node} now={now} onRestore={onRestore} t={t} />
-        ))}
-      </div>
-      <span className={css.fade} />
-    </div>
-  )
-}
-
 interface RemoteSearchState {
   query: string
   status: 'idle' | 'loading' | 'ready' | 'error'
@@ -781,15 +756,16 @@ export function WorkspaceBrowser({
   deleteWorkspace,
   insertWorkspaceBefore,
   archiveSession,
-  unarchiveSession,
   insertSessionBefore,
   createWorkspace,
   searchSessions,
   searchResultLimit,
   useDirectoryFlow,
+  useHostDescription,
   renderSlot,
   t,
 }: WorkspaceBrowserProps) {
+  const home = useHostDescription(description => description?.home)
   const workspaces = useWorkspaces(state => state.items)
   const workspacePhase = useWorkspaces(state => state.phase)
   const archivedSessionIds = useWorkspaces(state => state.archivedSessionIds)
@@ -798,10 +774,34 @@ export function WorkspaceBrowser({
   const directoryFlowAvailable = useDirectoryFlow(occupied => occupied)
   const groupBy = useStore(s => s.groupBy)
   const orderBy = useStore(s => s.orderBy)
-  const [archivedView, setArchivedView] = useState(false)
   const groupExpansion = useStore(s => s.groupExpansion)
   const sessionOrderByAccount = useStore(s => s.sessionOrderByAccount)
   const sessionUpdatedAtByAccount = useStore(s => s.sessionUpdatedAtByAccount)
+  const currentBlankSessionId = useSessions((state) => {
+    const current = state.current
+    return current !== undefined && state.byId[current]?.blank === true ? current : undefined
+  })
+  const currentBlankAccount = currentBlankSessionId === undefined
+    ? undefined
+    : (workspaces.find(workspace => workspace.sessionIds.includes(currentBlankSessionId))
+      ?.workspaceId as string | undefined) ?? UNGROUPED_KEY
+  const promotedBlank = useRef<{ sessionId: SessionId; accountKey: string } | undefined>(undefined)
+  useEffect(() => {
+    if (currentBlankSessionId === undefined || currentBlankAccount === undefined) {
+      promotedBlank.current = undefined
+      return
+    }
+    if (promotedBlank.current?.sessionId === currentBlankSessionId
+      && promotedBlank.current.accountKey === currentBlankAccount) return
+    promotedBlank.current = { sessionId: currentBlankSessionId, accountKey: currentBlankAccount }
+    for (const accountKey of new Set([currentBlankAccount, FLAT_SESSION_ORDER_KEY])) {
+      const previous = sessionOrderByAccount[accountKey] ?? []
+      actions.setSessionOrder(accountKey, [
+        currentBlankSessionId,
+        ...previous.filter(id => id !== currentBlankSessionId),
+      ])
+    }
+  }, [actions.setSessionOrder, currentBlankAccount, currentBlankSessionId, sessionOrderByAccount])
   useEffect(() => {
     if (workspacePhase !== 'ready') return
     actions.retainAccountKeys([
@@ -847,8 +847,13 @@ export function WorkspaceBrowser({
     searchInput.current?.focus({ preventScroll: true })
   }, [wide, searchExpanded, searchOnExpand])
 
+  // Outside-click dismissal stays off while the rail gesture is in flight
+  // (searchOnExpand): the rail click flips the shell wide and mounts this
+  // listener during its own dispatch, then keeps bubbling to document with
+  // the now-unmounted rail button as its target — outside searchRoot, so the
+  // listener would dismiss the search that click just opened.
   useEffect(() => {
-    if (!wide || !searchExpanded) return
+    if (!wide || !searchExpanded || searchOnExpand) return
     const onClick = (event: MouseEvent): void => {
       if (!(event.target instanceof Node) || searchRoot.current?.contains(event.target) === true) return
       searchInput.current?.blur()
@@ -857,7 +862,7 @@ export function WorkspaceBrowser({
     }
     document.addEventListener('click', onClick)
     return () => { document.removeEventListener('click', onClick) }
-  }, [normalizedQuery, wide, searchExpanded])
+  }, [normalizedQuery, wide, searchExpanded, searchOnExpand])
 
   useEffect(() => {
     if (normalizedQuery === '') {
@@ -966,11 +971,6 @@ export function WorkspaceBrowser({
       console.warn('session archive rejected:', reason)
     })
   }
-  const onSessionRestore = (sessionId: SessionNode['id']) => {
-    unarchiveSession(sessionId).catch((reason: unknown) => {
-      console.warn('session restore rejected:', reason)
-    })
-  }
 
   // Delete dialog is separate from the row so a successful removal can
   // unmount that row without tearing down the in-flight confirmation state.
@@ -1012,7 +1012,7 @@ export function WorkspaceBrowser({
       <div className={css.sectionHeader}>
         {wide && (
           <span className={clsx(css.sectionLabel, css.wide, searchExpanded && css.sectionLabelHidden)}>
-            {archivedView ? t('section.archived') : groupBy === 'flat' ? t('section.sessions') : t('section.workspaces')}
+            {groupBy === 'flat' ? t('section.sessions') : t('section.workspaces')}
           </span>
         )}
         {wide && (
@@ -1077,10 +1077,8 @@ export function WorkspaceBrowser({
             <ViewOptionsMenu
               groupBy={groupBy}
               orderBy={orderBy}
-              archived={archivedView}
-              onGroupPick={(mode) => { setArchivedView(false); actions.setGroupBy(mode) }}
+              onGroupPick={(mode) => { actions.setGroupBy(mode) }}
               onOrderPick={(mode) => { actions.setOrderBy(mode) }}
-              onArchivedPick={() => { setArchivedView(true) }}
               t={t}
             />
           )}
@@ -1156,60 +1154,52 @@ export function WorkspaceBrowser({
               t={t}
             />
           )
-          : archivedView
+          : groupBy === 'flat'
             ? (
-              <ArchivedList
-                useSessions={useSessions}
+              <FlatList
+                useSessions={useSessions} open={open} forkSession={forkSession}
+                onSessionRename={onSessionRename} onSessionArchive={onSessionArchive}
                 archivedSessionIds={archivedSessionIds}
-                onRestore={onSessionRestore}
+                orderBy={orderBy}
+                sessionOrderByAccount={sessionOrderByAccount}
+                sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
+                syncSessionOrderAccount={actions.syncSessionOrderAccount}
+                setSessionOrder={actions.setSessionOrder}
                 t={t}
               />
             )
-            : groupBy === 'flat'
-              ? (
-                <FlatList
-                  useSessions={useSessions} open={open} forkSession={forkSession}
-                  onSessionRename={onSessionRename} onSessionArchive={onSessionArchive}
-                  archivedSessionIds={archivedSessionIds}
-                  orderBy={orderBy}
-                  sessionOrderByAccount={sessionOrderByAccount}
-                  sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
-                  syncSessionOrderAccount={actions.syncSessionOrderAccount}
-                  setSessionOrder={actions.setSessionOrder}
-                  t={t}
-                />
-              )
-              : (
-                <SessionTree
-                  useSessions={useSessions}
-                  onSessionRename={onSessionRename}
-                  onSessionArchive={onSessionArchive}
-                  forkSession={forkSession}
-                  workspaces={workspaces}
-                  groupExpansion={groupExpansion}
-                  setGroupExpanded={actions.setGroupExpanded}
-                  sessionOrderByAccount={sessionOrderByAccount}
-                  sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
-                  syncSessionOrderAccount={actions.syncSessionOrderAccount}
-                  setSessionOrder={actions.setSessionOrder}
-                  archivedSessionIds={archivedSessionIds}
-                  startSession={startSession}
-                  open={open}
-                  insertWorkspaceBefore={insertWorkspaceBefore}
-                  insertSessionBefore={insertSessionBefore}
-                  orderBy={orderBy}
-                  t={t}
-                  onRenameRequest={(workspaceId, currentTitle) => {
-                    setRenameTarget({ workspaceId, currentTitle })
-                    setRenameDraft(currentTitle)
-                    setRenameError(null)
-                  }}
-                  onDeleteRequest={(workspaceId, title) => {
-                    setDeleteTarget({ workspaceId, title })
-                    setDeleteError(null)
-                  }}
-                />
-              ))}
+            : (
+              <SessionTree
+                useSessions={useSessions}
+                onSessionRename={onSessionRename}
+                onSessionArchive={onSessionArchive}
+                forkSession={forkSession}
+                workspaces={workspaces}
+                groupExpansion={groupExpansion}
+                setGroupExpanded={actions.setGroupExpanded}
+                sessionOrderByAccount={sessionOrderByAccount}
+                sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
+                syncSessionOrderAccount={actions.syncSessionOrderAccount}
+                setSessionOrder={actions.setSessionOrder}
+                archivedSessionIds={archivedSessionIds}
+                startSession={startSession}
+                open={open}
+                insertWorkspaceBefore={insertWorkspaceBefore}
+                insertSessionBefore={insertSessionBefore}
+                orderBy={orderBy}
+                home={home}
+                t={t}
+                onRenameRequest={(workspaceId, currentTitle) => {
+                  setRenameTarget({ workspaceId, currentTitle })
+                  setRenameDraft(currentTitle)
+                  setRenameError(null)
+                }}
+                onDeleteRequest={(workspaceId, title) => {
+                  setDeleteTarget({ workspaceId, title })
+                  setDeleteError(null)
+                }}
+              />
+            ))}
       </div>
 
       <Modal
