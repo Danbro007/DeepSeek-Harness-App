@@ -47,6 +47,7 @@ export function harnessArguments(commandPrefix: readonly string[], patchFiles: r
     'web',
     ...patchFiles.flatMap(path => ['--patch', path]),
     '--port', '0',
+    '--no-open',
   ]
 }
 
@@ -62,7 +63,7 @@ export function resolveDesktopCwd(env: NodeJS.ProcessEnv = process.env): string 
 }
 
 /** Resolve the built dsh CLI from the desktop package's production dependency. */
-export function resolveDshCliEntry(): string {
+function resolveDshCliEntry(): string {
   const require = createRequire(import.meta.url)
   return join(dirname(require.resolve('@deepseek-ai/dsh/package.json')), 'lib', 'bin.js')
 }

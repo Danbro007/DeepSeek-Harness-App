@@ -177,6 +177,8 @@
     { "path": "./packages/goal/tool-goal" },
     { "path": "./packages/goal/goal-round-driver" },
     { "path": "./packages/goal/command-goal" },
+    { "path": "./packages/usage/usage-deepseek" },
+    { "path": "./packages/usage/tool-usage" },
     { "path": "./packages/feedback/command-feedback" },
     { "path": "./packages/schedule/schedule" },
     { "path": "./packages/context/time-context" },

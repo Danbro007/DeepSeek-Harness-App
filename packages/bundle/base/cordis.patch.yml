@@ -278,6 +278,9 @@
     - id: command-goal
       name: '@deepseek-ai/dsh-command-goal'
 
+    - id: usage-deepseek
+      name: '@deepseek-ai/dsh-usage-deepseek'
+
     - id: plan-mode
       name: '@deepseek-ai/dsh-plan-mode'
       config:
@@ -389,6 +392,10 @@
     # domain, driver, and `/goal` command are above.
     - id: tool-goal
       name: '@deepseek-ai/dsh-tool-goal'
+
+    # DeepSeek platform balance/usage, surfaced to the model as a read tool.
+    - id: tool-usage
+      name: '@deepseek-ai/dsh-tool-usage'
 
     # Fresh-agent Ralph iteration over a build-time-fixed script.
     - id: tool-ralph

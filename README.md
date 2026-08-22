@@ -6,19 +6,24 @@ The macOS desktop application for [DeepSeek Harness](https://github.com/deepseek
 
 ## Download
 
-Get the latest build from [Releases](https://github.com/Danbro007/DeepSeek-Harness-App/releases): download `DeepSeek-Harness-App-v0.1.0-macos-arm64.zip`, unzip, and drag `DeepSeek Harness App` into `Applications`.
+Get the latest build from [Releases](https://github.com/Danbro007/DeepSeek-Harness-App/releases): download `DeepSeek-Harness-App-v0.1.1-rc.2-macos-arm64.zip`, unzip, and drag `DeepSeek Harness App` into `Applications`.
 
 > The build is ad-hoc signed and not notarized; on first launch macOS may require allowing it under **System Settings → Privacy & Security**.
 
 ## Features
 
 - Native macOS app shell over the Harness Web profile
+- Direct image input with the experimental `DeepSeek-V4-Flash-Vision-Exp` model
+- DeepSeek usage and balance information in Settings
 - New sessions, workspaces, and live model interaction
 - Agent presets and configuration
 - Conversation-content search, archive view, and restore
 - Tool calls, trajectory, and history recovery
+- App startup stays in the desktop window without opening a duplicate browser tab
 
 ## Run from source
+
+<a id="run"></a>
 
 To run the Web UI from a repository checkout:
 

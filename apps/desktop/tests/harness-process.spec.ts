@@ -16,7 +16,7 @@ describe('desktop Harness process helpers', () => {
 
   it('places desktop patches before Web application arguments', () => {
     expect(harnessArguments(['cli.js'], ['/app/desktop.cordis.yml'])).toEqual([
-      'cli.js', 'web', '--patch', '/app/desktop.cordis.yml', '--port', '0',
+      'cli.js', 'web', '--patch', '/app/desktop.cordis.yml', '--port', '0', '--no-open',
     ])
   })
 

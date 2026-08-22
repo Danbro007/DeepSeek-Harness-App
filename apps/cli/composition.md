@@ -8,6 +8,14 @@ The dsh-base bundle patch every profile applies first; mode bundles (dsh-web-app
 ```mermaid
 flowchart LR
   cfg["packages/bundle/base/cordis.patch.yml<br/>cordis.yml"]
+  plugin_dsh_base_invariants["invariants<br/>@deepseek-ai/dsh-invariants"]
+  cfg --> plugin_dsh_base_invariants
+  plugin_dsh_base_session_invariant["session-invariant<br/>@deepseek-ai/dsh-session/invariant"]
+  cfg --> plugin_dsh_base_session_invariant
+  plugin_dsh_base_agent_invariant["agent-invariant<br/>@deepseek-ai/dsh-agent/invariant"]
+  cfg --> plugin_dsh_base_agent_invariant
+  plugin_dsh_base_agent_loop_invariant["agent-loop-invariant<br/>@deepseek-ai/dsh-agent-loop/invariant"]
+  cfg --> plugin_dsh_base_agent_loop_invariant
   plugin_dsh_base_timer["timer<br/>@deepseek-ai/cordis-plugin-timer"]
   cfg --> plugin_dsh_base_timer
   plugin_dsh_base_hmr["hmr<br/>@deepseek-ai/cordis-plugin-hmr"]
@@ -100,6 +108,8 @@ flowchart LR
   cfg --> plugin_dsh_base_goal_round_driver
   plugin_dsh_base_command_goal["command-goal<br/>@deepseek-ai/dsh-command-goal"]
   cfg --> plugin_dsh_base_command_goal
+  plugin_dsh_base_usage_deepseek["usage-deepseek<br/>@deepseek-ai/dsh-usage-deepseek"]
+  cfg --> plugin_dsh_base_usage_deepseek
   plugin_dsh_base_plan_mode["plan-mode<br/>@deepseek-ai/dsh-plan-mode"]
   cfg --> plugin_dsh_base_plan_mode
   plugin_dsh_base_token_meter["token-meter<br/>@deepseek-ai/dsh-token-meter"]
@@ -142,6 +152,8 @@ flowchart LR
   cfg --> plugin_dsh_base_tool_todo
   plugin_dsh_base_tool_goal["tool-goal<br/>@deepseek-ai/dsh-tool-goal"]
   cfg --> plugin_dsh_base_tool_goal
+  plugin_dsh_base_tool_usage["tool-usage<br/>@deepseek-ai/dsh-tool-usage"]
+  cfg --> plugin_dsh_base_tool_usage
   plugin_dsh_base_tool_ralph["tool-ralph<br/>@deepseek-ai/dsh-tool-ralph"]
   cfg --> plugin_dsh_base_tool_ralph
   plugin_dsh_base_tool_str_replace_editor["tool-str-replace-editor<br/>@deepseek-ai/dsh-tool-str-replace-editor"]
@@ -168,6 +180,10 @@ flowchart LR
 
 | Plugin id | Package / module |
 | --- | --- |
+| `invariants` | `@deepseek-ai/dsh-invariants` |
+| `session-invariant` | `@deepseek-ai/dsh-session/invariant` |
+| `agent-invariant` | `@deepseek-ai/dsh-agent/invariant` |
+| `agent-loop-invariant` | `@deepseek-ai/dsh-agent-loop/invariant` |
 | `timer` | `@deepseek-ai/cordis-plugin-timer` |
 | `hmr` | `@deepseek-ai/cordis-plugin-hmr` |
 | `llm` | `@deepseek-ai/dsh-llm` |
@@ -214,6 +230,7 @@ flowchart LR
 | `goal` | `@deepseek-ai/dsh-goal` |
 | `goal-round-driver` | `@deepseek-ai/dsh-goal-round-driver` |
 | `command-goal` | `@deepseek-ai/dsh-command-goal` |
+| `usage-deepseek` | `@deepseek-ai/dsh-usage-deepseek` |
 | `plan-mode` | `@deepseek-ai/dsh-plan-mode` |
 | `token-meter` | `@deepseek-ai/dsh-token-meter` |
 | `compaction-basic` | `@deepseek-ai/dsh-compaction-basic` |
@@ -235,6 +252,7 @@ flowchart LR
 | `tool-result-pruner` | `@deepseek-ai/dsh-compaction-tool-result-pruner` |
 | `tool-todo` | `@deepseek-ai/dsh-tool-todo` |
 | `tool-goal` | `@deepseek-ai/dsh-tool-goal` |
+| `tool-usage` | `@deepseek-ai/dsh-tool-usage` |
 | `tool-ralph` | `@deepseek-ai/dsh-tool-ralph` |
 | `tool-str-replace-editor` | `@deepseek-ai/dsh-tool-str-replace-editor` |
 | `repeat-tool-reminder` | `@deepseek-ai/dsh-repeat-tool-reminder` |

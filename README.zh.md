@@ -6,19 +6,24 @@
 
 ## 下载
 
-从 [Releases](https://github.com/Danbro007/DeepSeek-Harness-App/releases) 获取最新构建：下载 `DeepSeek-Harness-App-v0.1.0-macos-arm64.zip`，解压后将 `DeepSeek Harness App` 拖入“应用程序”。
+从 [Releases](https://github.com/Danbro007/DeepSeek-Harness-App/releases) 获取最新构建：下载 `DeepSeek-Harness-App-v0.1.1-rc.2-macos-arm64.zip`，解压后将 `DeepSeek Harness App` 拖入“应用程序”。
 
 > 当前构建仅作 adhoc 签名、未公证，首次打开时可能需要在“系统设置 → 隐私与安全性”中允许。
 
 ## 功能
 
 - 基于 Harness Web profile 的原生 macOS 应用外壳
+- 通过实验性 `DeepSeek-V4-Flash-Vision-Exp` 模型直接输入图像
+- 在设置中查看 DeepSeek 用量与余额信息
 - 新建会话、工作区与真实模型交互
 - Agent 预设与配置
 - 会话内容搜索、归档查看与恢复
 - 工具调用、轨迹与历史恢复
+- 启动 App 时只显示桌面窗口，不会重复打开浏览器标签页
 
 ## 从源码运行
+
+<a id="run"></a><a id="run-from-source"></a>
 
 从仓库源码运行 Web UI：
 
@@ -42,8 +47,8 @@ pnpm run pack:desktop:mac
 
 ## 开发
 
-- 桌面包装层：[apps/desktop/README.md](apps/desktop/README.md)
-- Harness 架构：[docs/architecture.md](docs/architecture.md)
+- 桌面包装层：[apps/desktop/README.zh.md](apps/desktop/README.zh.md)
+- Harness 架构：[docs/architecture.zh.md](docs/architecture.zh.md)
 - 面向 agent：[AGENTS.md](AGENTS.md)
 
 ## 许可证

@@ -2200,6 +2200,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'usage',
+    summary: 'Read-only usage service (`ctx.usage`).',
+    description: 'Read-only usage service (`ctx.usage`).',
+    methods: [
+      {
+        signature: '@Remote(\'snapshot\') async snapshot(): Promise<UsageSnapshot>',
+        description: 'Read balance and usage in one call. Balance comes from the API key, usage from the platform session token; each source degrades independently into a notice, so a missing token still returns the balance.',
+        parameters: [],
+        returns: 'the assembled snapshot.',
+      },
+    ],
+  },
+  {
     key: 'userQuestions',
     summary: '`ctx.userQuestions`: one active UI provider plus an `ask()` API.',
     description: '`ctx.userQuestions`: one active UI provider plus an `ask()` API.',
@@ -3008,6 +3021,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export class BackendRegistry {\n    register(name: string, backend: StorageBackend): () => void;\n    get(name: string): StorageBackend;\n    names(): string[];\n}',
   },
   {
+    name: 'BalanceSource',
+    declaration: 'export type BalanceSource = \'api-key\' | \'platform\' | \'none\';',
+  },
+  {
+    name: 'BalanceView',
+    declaration: 'export interface BalanceView {\n    readonly currency: string;\n    readonly totalBalance: number;\n    readonly grantedBalance: number;\n    readonly toppedUpBalance: number;\n    readonly isAvailable: boolean;\n    readonly source: BalanceSource;\n}',
+  },
+  {
     name: 'BashEnvContributor',
     declaration: 'export interface BashEnvContributor {\n    name: string;\n    variables: Readonly<Record<DshEnvironmentKey, BashEnvVariable>>;\n    resolve(execution: ToolExecution): Readonly<Partial<Record<DshEnvironmentKey, string>>>;\n}',
   },
@@ -3026,6 +3047,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CancelOptions',
     declaration: 'export interface CancelOptions {\n    keepInbox?: boolean | undefined;\n}',
+  },
+  {
+    name: 'CategoryBreakdown',
+    declaration: 'export interface CategoryBreakdown {\n    readonly category: UsageCategoryKind;\n    readonly amount: number;\n    readonly cost: number | null;\n}',
   },
   {
     name: 'ClientResponse',
@@ -3230,6 +3255,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CredentialRef',
     declaration: 'export type CredentialRef = Branded<\'CredentialRef\'>;',
+  },
+  {
+    name: 'DailyUsage',
+    declaration: 'export interface DailyUsage {\n    readonly date: string;\n    readonly tokens: number;\n    readonly cost: number;\n    readonly requests: number;\n}',
   },
   {
     name: 'DiffCallView',
@@ -4934,6 +4963,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'UpdateTeamTaskRequest',
     declaration: 'export interface UpdateTeamTaskRequest {\n    readonly taskId: TeamTaskId;\n    readonly expectedRevision: number;\n    readonly action: TeamTaskAction;\n    readonly subject?: string;\n    readonly description?: string;\n    readonly blockedBy?: readonly TeamTaskId[];\n    readonly writeScopes?: readonly string[];\n    readonly owner?: string;\n}',
+  },
+  {
+    name: 'UsageCategoryKind',
+    declaration: 'export type UsageCategoryKind = \'cache-hit\' | \'cache-miss\' | \'output\' | \'request\';',
+  },
+  {
+    name: 'UsageSnapshot',
+    declaration: 'export interface UsageSnapshot {\n    readonly balance: BalanceView | null;\n    readonly usage: UsageSummary | null;\n    readonly platformTokenConfigured: boolean;\n    readonly updatedAt: number;\n    readonly notices: readonly string[];\n}',
+  },
+  {
+    name: 'UsageSummary',
+    declaration: 'export interface UsageSummary {\n    readonly todayTokens: number;\n    readonly todayCost: number;\n    readonly currentMonthTokens: number;\n    readonly currentMonthCost: number;\n    readonly requestCount: number;\n    readonly currentMonthRequestCount: number;\n    readonly topModel: string | null;\n    readonly categories: readonly CategoryBreakdown[];\n    readonly daily: readonly DailyUsage[];\n    readonly currency: string;\n}',
   },
   {
     name: 'UserMessage',

@@ -212,6 +212,24 @@ abstract deleteRecord(key: CredentialKey): Promise<void>
 
 Source: [`packages/credentials/credentials/src/index.ts`](../../packages/credentials/credentials/src/index.ts)
 
+<a id="ctxusage--usageservice"></a>
+
+### `ctx.usage` — `UsageService`
+
+Read-only usage service (`ctx.usage`).
+
+```ts cordis-catalog
+/**
+ * Read balance and usage in one call. Balance comes from the API key, usage
+ * from the platform session token; each source degrades independently into
+ * a notice, so a missing token still returns the balance.
+ * @returns the assembled snapshot.
+ */
+@Remote('snapshot') async snapshot(): Promise<UsageSnapshot>
+```
+
+Source: [`packages/usage/usage-deepseek/src/index.ts`](../../packages/usage/usage-deepseek/src/index.ts)
+
 <a id="authorization-events"></a>
 
 ### `authorization/*` events

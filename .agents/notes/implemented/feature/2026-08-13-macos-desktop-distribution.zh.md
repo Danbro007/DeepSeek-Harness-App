@@ -10,7 +10,7 @@ DeepSeek Harness 已在 Web profile 中提供完整 GUI，但还没有可安装�
 
 ## 决策
 
-`apps/desktop` 是现有 Web profile 之上的 Electron 发行包装层。其主进程以 `dsh web --port 0` 启动随应用打包的 `@deepseek-ai/dsh` CLI，等待规范回环地址就绪行，然后在一个经过安全加固的 `BrowserWindow` 中加载该地址源。Web profile 仍是 GUI 组合和模型可见行为的唯一所有者。
+`apps/desktop` 是现有 Web profile 之上的 Electron 发行包装层。其主进程以 `dsh web --port 0 --no-open` 启动随应用打包的 `@deepseek-ai/dsh` CLI，等待规范回环地址就绪行，然后在一个经过安全加固的 `BrowserWindow` 中加载该地址源。包装层负责承载就绪页面，因此启动时不会再把该 URL 交给系统浏览器。Web profile 仍是 GUI 组合和模型可见行为的唯一所有者。
 
 包装层将 Harness 进程作为一项自有资源。启动过程有就绪等待上限，并保留最近的子进程诊断。退出时先发送 SIGTERM，让 Cordis tree 完成 dispose（资源释放），再在宽限期结束后发送 SIGKILL。渲染进程导航限制在分配的地址源内；外部 HTTP 和 HTTPS 链接通过 macOS 打开，其他协议会被拒绝。
 
@@ -24,7 +24,7 @@ DeepSeek Harness 已在 Web profile 中提供完整 GUI，但还没有可安装�
 
 ## 验证
 
-单元测试固定就绪行解析、桌面 patch 参数、cwd 选择、同源导航和外链协议过滤。macOS 打包检查必须生成可启动且 `CFBundleIconFile` 能解析到所生成 `.icns` 的 `.app`；冒烟测试使用空的临时 `DSH_HOME` 启动打包后的可执行文件，等待其回环地址就绪行，并获取 Web shell 标题。集成测试通道——真实进程的 harness 生命周期冒烟测试与被跳过的 Playwright Electron shell 测试——由[桌面 Electron 集成测试](../testing/2026-08-14-desktop-electron-integration-testing.md) Agent Note 负责。
+单元测试固定就绪行解析、桌面 patch 参数、cwd 选择、同源导航和外链协议过滤。macOS 打包检查必须生成可启动且 `CFBundleIconFile` 能解析到所生成 `.icns` 的 `.app`；冒烟测试使用空的临时 `DSH_HOME` 启动打包后的可执行文件，等待其回环地址就绪行，并获取 Web shell 标题。集成测试通道——真实进程的 harness 生命周期冒烟测试与被跳过的 Playwright Electron shell 测试——由[桌面 Electron 集成测试](../testing/2026-08-14-desktop-electron-integration-testing.zh.md) Agent Note 负责。
 
 ## 已考虑的替代方案
 

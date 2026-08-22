@@ -88,10 +88,10 @@ describe('gate graph validation', () => {
     const ids = withPnpmEntrypoint(() => gatesForMode('hygiene').map(subject => subject.id))
 
     expect(ids).toEqual([
-      'rescope-vendor', 'knip', 'publint', 'constraints', 'dsh-package-licenses',
+      'rescope-vendor', 'vendored-links', 'runtime-closure', 'cordis-config',
+      'knip', 'publint', 'constraints', 'dsh-package-licenses',
       'package-invariants', 'built-package-invariants', 'node-next-types',
-      'optional-dependency-imports', 'client-packages', 'cordis-config',
-      'runtime-closure', 'vendored-links',
+      'optional-dependency-imports', 'client-packages',
     ])
     expect(defaultConcurrency('hygiene', ids.length, 8)).toEqual({
       workers: 4,

@@ -10,7 +10,7 @@ DeepSeek Harness has one complete GUI in the Web profile but no installable macO
 
 ## Decision
 
-`apps/desktop` is an Electron distribution wrapper over the existing Web profile. Its main process launches the packaged `@deepseek-ai/dsh` CLI as `dsh web --port 0`, waits for the canonical loopback readiness line, and loads that origin in one hardened `BrowserWindow`. The Web profile remains the sole owner of GUI composition and model-visible behavior.
+`apps/desktop` is an Electron distribution wrapper over the existing Web profile. Its main process launches the packaged `@deepseek-ai/dsh` CLI as `dsh web --port 0 --no-open`, waits for the canonical loopback readiness line, and loads that origin in one hardened `BrowserWindow`. The wrapper owns the ready page, so startup does not also hand the URL to the system browser. The Web profile remains the sole owner of GUI composition and model-visible behavior.
 
 The wrapper treats the Harness process as one owned resource. Startup has a bounded readiness wait and preserves recent child diagnostics. Quit sends SIGTERM so the Cordis tree can dispose, then sends SIGKILL after a bounded grace period. Renderer navigation remains on the assigned origin; external HTTP and HTTPS links open through macOS, and other schemes are denied.
 

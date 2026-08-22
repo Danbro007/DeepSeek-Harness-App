@@ -3009,6 +3009,30 @@ export interface Config {
 
 来源：[`packages/typert/loader/src/index.ts:47`](../packages/typert/loader/src/index.ts)
 
+<a id="deepseek-aidsh-usage-deepseek"></a>
+
+## `@deepseek-ai/dsh-usage-deepseek`
+
+需要：`credentials`
+
+```ts config-catalog
+/** Deployment-varying facts: credential references and endpoint bases. */
+export interface Config {
+  /** Credential reference for the DeepSeek API key; defaults to `DEEPSEEK_API_KEY`. */
+  apiKeyEnv?: string
+  /** Credential reference for the platform session token; defaults to `DEEPSEEK_PLATFORM_TOKEN`. */
+  platformTokenEnv?: string
+  /** API-key endpoint base (overridable in tests); defaults to the public API. */
+  apiBaseUrl?: string
+  /** Platform dashboard endpoint base; defaults to the public dashboard. */
+  platformBaseUrl?: string
+  /** Per-request timeout in milliseconds. */
+  timeoutMs?: number
+}
+```
+
+来源：[`packages/usage/usage-deepseek/src/index.ts:45`](../packages/usage/usage-deepseek/src/index.ts)
+
 <a id="deepseek-aidsh-user-approval"></a>
 
 ## `@deepseek-ai/dsh-user-approval`
@@ -3261,6 +3285,7 @@ export interface Config {
 - `@deepseek-ai/dsh-client-ui-theme`（[`packages/client/ui-theme/src/index.ts`](../packages/client/ui-theme/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-tool`（[`packages/client/ui-tool/src/index.ts`](../packages/client/ui-tool/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-trajectory`（[`packages/client/ui-trajectory/src/index.ts`](../packages/client/ui-trajectory/src/index.ts)）
+- `@deepseek-ai/dsh-client-ui-usage`（[`packages/client/ui-usage/src/index.ts`](../packages/client/ui-usage/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-user-questions`（[`packages/client/ui-user-questions/src/index.ts`](../packages/client/ui-user-questions/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workflow-run`（[`packages/client/ui-workflow-run/src/index.ts`](../packages/client/ui-workflow-run/src/index.ts)）
 - `@deepseek-ai/dsh-client-ui-workspace`（[`packages/client/ui-workspace/src/index.ts`](../packages/client/ui-workspace/src/index.ts)）
@@ -3292,6 +3317,7 @@ export interface Config {
 - `@deepseek-ai/dsh-tool-call-timeout-policy` — 需要 `tools`（[`packages/guard/timeout-policy/src/index.ts`](../packages/guard/timeout-policy/src/index.ts)）
 - `@deepseek-ai/dsh-tool-cordis` — 需要 `tools` · `systemPrompt` · `dynamicCordisRunner` · `cordisInspect`（[`packages/extensions/tool-cordis/src/index.ts`](../packages/extensions/tool-cordis/src/index.ts)）
 - `@deepseek-ai/dsh-tool-subagent-control` — 需要 `tools` · `subagents`（[`packages/subagent/tool-subagent-control/src/index.ts`](../packages/subagent/tool-subagent-control/src/index.ts)）
+- `@deepseek-ai/dsh-tool-usage` — 需要 `usage` · `tools`（[`packages/usage/tool-usage/src/index.ts`](../packages/usage/tool-usage/src/index.ts)）
 - `@deepseek-ai/dsh-user-questions`（[`packages/interaction/user-questions/src/index.ts`](../packages/interaction/user-questions/src/index.ts)）
 - `@deepseek-ai/dsh-workspace` — 需要 `storageDomain` · `sessionPersistence`（[`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts)）
 

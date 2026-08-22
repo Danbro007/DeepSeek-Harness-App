@@ -61,6 +61,8 @@ import * as ToolTasks from '@deepseek-ai/dsh-tool-jobs'
 import type TeamService from '@deepseek-ai/dsh-experimental-agent-team'
 import * as ToolTeam from '@deepseek-ai/dsh-experimental-tool-agent-team'
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo'
+import * as ToolUsage from '@deepseek-ai/dsh-tool-usage'
+import UsageService from '@deepseek-ai/dsh-usage-deepseek'
 import * as ToolSubagent from '@deepseek-ai/dsh-tool-subagent'
 import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
 import VmWorkflowEngine from '@deepseek-ai/dsh-workflow-worker-thread'
@@ -572,6 +574,20 @@ const TOOL_PACKAGES: ToolPackage[] = [
     },
     note:
       'todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.',
+  },
+  {
+    pkg: '@deepseek-ai/dsh-tool-usage',
+    dir: 'tool-usage',
+    source: 'packages/usage/tool-usage/src/index.ts',
+    requires: ['ctx.tools', 'ctx.usage'],
+    writes: ['tool/call', 'tool/result'],
+    async mount(ctx) {
+      ctx.provide('credentials', {} as never)
+      await ctx.plugin(UsageService)
+      await ctx.plugin(ToolUsage)
+    },
+    note:
+      'deepseek_usage reads the current balance and account usage. Missing credentials degrade to notices in the result instead of removing the tool schema.',
   },
   {
     pkg: '@deepseek-ai/dsh-tool-workflow',

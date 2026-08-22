@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "pnpm run build && electron .",
-    "pack:mac": "node scripts/pack-mac.mjs"
+    "pack:mac": "pnpm run build && node scripts/pack-mac.mjs"
   },
   "dependencies": {
     "@deepseek-ai/dsh": "workspace:^",

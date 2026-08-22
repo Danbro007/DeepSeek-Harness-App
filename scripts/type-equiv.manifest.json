@@ -149,7 +149,7 @@
     {
       "doc": "docs/subsystems/scope.md",
       "symbol": "ScopeKey",
-      "source": "packages/core/scope/src/index.ts"
+      "source": "packages/core/scope/src/chain.ts"
     },
     {
       "doc": "docs/subsystems/scope.md",

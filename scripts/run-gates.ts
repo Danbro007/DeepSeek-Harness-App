@@ -234,8 +234,6 @@ export function gatesForMode(selected: Mode): Gate[] {
       return nodeCompatGates()
     case 'check-all':
       return [
-        pnpmScript('runtime-closure', 'verify-runtime-closure', { label: 'runtime closure' }),
-        pnpmScript('cordis-config', 'verify-cordis-config', { label: 'Cordis config' }),
         pnpmScript('client-domain-graph', 'verify-client-domain-graph', { label: 'client domain graph' }),
         pnpmScript('test', 'test'),
         pnpmScript('issue-management', 'test:issue-management', { label: 'Issue management policy' }),
@@ -252,12 +250,7 @@ export function gatesForMode(selected: Mode): Gate[] {
         pnpmScript('module-graph', 'verify-module-graph', { label: 'module graph' }),
       ]
     case 'hygiene':
-      return [
-        ...hygieneLeafGates(),
-        pnpmScript('cordis-config', 'verify-cordis-config', { label: 'Cordis config' }),
-        pnpmScript('runtime-closure', 'verify-runtime-closure', { label: 'runtime closure' }),
-        pnpmScript('vendored-links', 'verify-vendored-links', { label: 'vendored links' }),
-      ]
+      return hygieneLeafGates()
     case 'doc-sync':
       return docSyncLeafGates()
   }

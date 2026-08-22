@@ -190,6 +190,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Configuration carries references to secrets; providers own the values. Consumers resolve per operation, so a rotated credential reaches the very next request; the web gateway exposes value-free views and write-only storage.',
   },
   {
+    key: 'usage',
+    pkg: 'usage-deepseek',
+    title: 'DeepSeek account usage reader',
+    mode: 'core',
+    consumers: ['tool-usage', 'api-remotes'],
+    note: 'Reads balance and private dashboard usage through per-operation credential resolution; each source degrades independently into notices.',
+  },
+  {
     key: 'authorization',
     pkg: 'authorization',
     title: 'Authorization flow registry',

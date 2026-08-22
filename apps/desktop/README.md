@@ -2,7 +2,7 @@
 
 English | [中文](README.zh.md)
 
-The macOS desktop distribution opens the existing DeepSeek Harness Web application in a hardened Electron window. It starts one private `dsh web --port 0` child process, waits for the CLI readiness line, and preserves the Web profile's UI, sessions, tools, approvals, settings, and plugin composition without maintaining a second frontend.
+The macOS desktop distribution opens the existing DeepSeek Harness Web application in a hardened Electron window. It starts one private `dsh web --port 0 --no-open` child process, waits for the CLI readiness line, and preserves the Web profile's UI, sessions, tools, approvals, settings, and plugin composition without maintaining a second frontend.
 
 ![DeepSeek Harness macOS onboarding](assets/readme/desktop-onboarding.png)
 
@@ -22,7 +22,7 @@ The Settings dialog includes the complete Agent preset manager: the shipped Stan
 
 ```mermaid
 flowchart LR
-  A["DeepSeek Harness App.app"] -->|"owns lifecycle"| B["dsh web --port 0"]
+  A["DeepSeek Harness App.app"] -->|"owns lifecycle"| B["dsh web --port 0 --no-open"]
   B --> C["Web profile and plugin tree"]
   C --> D["Loopback UI"]
   D -->|"same-origin only"| A
@@ -47,11 +47,13 @@ pnpm run pack:desktop:mac
 
 The checked-in `assets/AppIcon.svg` is the source for the complete macOS iconset and `assets/icon.icns`; packaging embeds that icon as the application's `CFBundleIconFile`.
 
+The packaging command rebuilds the desktop main process before staging production dependencies, so the generated application cannot retain stale desktop JavaScript.
+
 The application uses the user's home directory as the initial Harness working directory because Finder does not provide a meaningful process cwd. Set `DSH_DESKTOP_CWD` before launch to override it. The normal Harness home, credentials, settings, session persistence, sandbox, and approval behavior remain owned by the Web profile.
 
 ## Runtime behavior
 
-The renderer has no Node integration, uses context isolation and the Chromium sandbox, and may navigate only within the assigned loopback origin. HTTP and HTTPS links outside that origin open in the system browser; other schemes are rejected. Application exit sends SIGTERM to Harness, waits up to eight seconds for plugin disposal, and then sends SIGKILL only if shutdown did not finish.
+The renderer has no Node integration, uses context isolation and the Chromium sandbox, and may navigate only within the assigned loopback origin. Desktop startup passes `--no-open` so the Web profile does not open a separate browser window. HTTP and HTTPS links outside the assigned origin still open in the system browser; other schemes are rejected. Application exit sends SIGTERM to Harness, waits up to eight seconds for plugin disposal, and then sends SIGKILL only if shutdown did not finish.
 
 This distribution intentionally reuses the browser carrier. It is not the port-free Electron IPC carrier reserved by the GUI architecture; that carrier remains a separate future application-level transport.
 

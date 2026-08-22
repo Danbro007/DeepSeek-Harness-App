@@ -37,6 +37,9 @@
       "path": "../../goal/goal"
     },
     {
+      "path": "../../usage/usage-deepseek"
+    },
+    {
       "path": "../../feedback/message-feedback"
     },
     {

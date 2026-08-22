@@ -2,7 +2,7 @@
 
 [English](README.md) | 中文
 
-macOS 桌面发行版在经过安全加固的 Electron 窗口中打开现有 DeepSeek Harness Web 应用。它启动一个私有的 `dsh web --port 0` 子进程，等待 CLI（命令行界面）就绪行，并在不维护第二套前端的前提下保留 Web profile 的 UI、会话、工具、审批、设置和插件组合。
+macOS 桌面发行版在经过安全加固的 Electron 窗口中打开现有 DeepSeek Harness Web 应用。它启动一个私有的 `dsh web --port 0 --no-open` 子进程，等待 CLI（命令行界面）就绪行，并在不维护第二套前端的前提下保留 Web profile 的 UI、会话、工具、审批、设置和插件组合。
 
 ![DeepSeek Harness macOS 首次启动界面](assets/readme/desktop-onboarding.png)
 
@@ -22,7 +22,7 @@ macOS 桌面发行版在经过安全加固的 Electron 窗口中打开现有 Dee
 
 ```mermaid
 flowchart LR
-  A["DeepSeek Harness App.app"] -->|"owns lifecycle"| B["dsh web --port 0"]
+  A["DeepSeek Harness App.app"] -->|"owns lifecycle"| B["dsh web --port 0 --no-open"]
   B --> C["Web profile and plugin tree"]
   C --> D["Loopback UI"]
   D -->|"same-origin only"| A
@@ -47,11 +47,13 @@ pnpm run pack:desktop:mac
 
 仓库中的 `assets/AppIcon.svg` 是完整 macOS iconset 与 `assets/icon.icns` 的源文件；打包时会将该图标嵌入为应用的 `CFBundleIconFile`。
 
+打包命令会在暂存生产依赖前重新构建桌面主进程，确保生成的应用不会保留过期的桌面 JavaScript。
+
 应用使用用户主目录作为 Harness 的初始工作目录，因为 Finder 不会提供有意义的进程 cwd。启动前设置 `DSH_DESKTOP_CWD` 可覆盖该目录。常规 Harness 主目录、凭证、设置、会话持久化、沙箱和审批行为仍由 Web profile 负责。
 
 ## 运行时行为
 
-渲染进程不启用 Node 集成，使用上下文隔离和 Chromium 沙箱，并且只能在分配的回环地址源内导航。该源之外的 HTTP 和 HTTPS 链接在系统浏览器中打开；其他协议会被拒绝。应用退出时先向 Harness 发送 SIGTERM，最多等待八秒让插件完成 dispose（资源释放），仅在关闭未完成时发送 SIGKILL。
+渲染进程不启用 Node 集成，使用上下文隔离和 Chromium 沙箱，并且只能在分配的回环地址源内导航。桌面启动会传入 `--no-open`，因此 Web profile 不会额外打开浏览器窗口；分配地址源之外的 HTTP 和 HTTPS 链接仍在系统浏览器中打开，其他协议会被拒绝。应用退出时先向 Harness 发送 SIGTERM，最多等待八秒让插件完成 dispose（资源释放），仅在关闭未完成时发送 SIGKILL。
 
 该发行版有意复用浏览器承载层。它不是 GUI 架构预留的无端口 Electron IPC 载体；后者仍属于未来独立的应用层传输实现。
 

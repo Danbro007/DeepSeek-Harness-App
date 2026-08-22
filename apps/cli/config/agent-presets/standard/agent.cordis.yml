@@ -97,6 +97,12 @@
 - id: tool-goal
   name: '@deepseek-ai/dsh-tool-goal'
 
+# DeepSeek platform balance/usage read tool. The usage SERVICE stays on the
+# host plane (the Gateway serves `usage` as a Remote); the preset only chooses
+# whether its agent may call the read tool.
+- id: tool-usage
+  name: '@deepseek-ai/dsh-tool-usage'
+
 # ── plan mode ───────────────────────────────────────────────────────────────
 
 # Plan state is per-agent by nature, so an entry-local realm is not a

@@ -206,6 +206,9 @@
     - id: ui-settings-plugin-inventory
       name: '@deepseek-ai/dsh-client-ui-settings-plugin-inventory'
 
+    - id: ui-usage
+      name: '@deepseek-ai/dsh-client-ui-usage'
+
     - id: ui-conversation
       name: '@deepseek-ai/dsh-client-ui-conversation'
 
@@ -364,6 +367,11 @@
 # session, so one host instance serves every session exactly as before presets.
 
 - id: tool-goal
+  disabled: true
+
+# The usage tool follows the goal tool: the usage SERVICE stays on the host
+# plane (the Gateway serves `usage` as a Remote) and the preset mounts the tool.
+- id: tool-usage
   disabled: true
 
 - id: plan-mode
